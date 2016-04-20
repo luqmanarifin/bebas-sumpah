@@ -1,0 +1,19 @@
+BEA
+-> input array of bytes
+-> output array of bytes
+
+dependency, from important to less :
+global
+keygen
+block
+cbc
+feistel
+bonek algorithm
+
+SHA1
+-> input array of bytes
+-> output big integer
+
+ECDSA
+-> signing : input array of bytes + biginteger (private key), output pair of integer
+-> verif : input array of bytes + point (public key) + signature, output yes/no

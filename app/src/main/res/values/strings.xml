@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">BebasSumpah</string>
     <string name="action_settings">Settings</string>
+
+    <string name="button_sent">Sents</string>
+    <string name="button_compose">Compose</string>
+    <string name="button_inbox">Inbox</string>
 </resources>

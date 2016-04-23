@@ -19,15 +19,25 @@ public class Main {
     return ret;
   }
   
+  /* force key to be 128-bit long */ 
+  public static int[] normalize(int[] key) {
+    int[] ret = new int[16];
+    for(int i = 0; i < 16; i++) {
+      ret[i] = key[i % key.length];
+    }
+    return ret;
+  }
+  
   public static void main(String[] args) {
-    String s = "1234567890123456";
-    String key = "1234567890titid6";
-    Block is = new Block(8, toByte(s));
-    Block ks = new Block(8, toByte(key));
-    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
-    is = is.e_encrypt(ks);
-    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
-    is = is.e_decrypt(ks);
-    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
+    BonekAlgorithm bonek = new BonekAlgorithm();
+    String s = "inas nuha kenapa kamu kok lucu sih";
+    String key = "kenapa";
+    int[] is = toByte(s);
+    int[] ks = normalize(toByte(key));
+    for(int i = 0; i < is.length; i++) System.out.print(is[i] + " "); System.out.println("");
+    is = bonek.encrypt(is, ks);
+    for(int i = 0; i < is.length; i++) System.out.print(is[i] + " "); System.out.println("");
+    is = bonek.decrypt(is, ks);
+    for(int i = 0; i < is.length; i++) System.out.print(is[i] + " "); System.out.println("");
   }
 }

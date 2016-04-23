@@ -19,6 +19,7 @@ public class Block {
   
   public Block() {
     bit = new int[Global.BLOCK_SIZE];
+    BIT_SIZE = 8;
     Arrays.fill(bit, 0);
   }
   
@@ -27,7 +28,7 @@ public class Block {
     bit = new int[Global.BLOCK_SIZE];
     Random rand = new Random();
     for(int i = 0; i < Global.BLOCK_SIZE; i++) {
-      bit[i] = rand.nextInt(1 << BIT_SIZE);
+      bit[i] = 0; //rand.nextInt(1 << BIT_SIZE);
     }
   }
   

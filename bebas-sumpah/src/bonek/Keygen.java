@@ -24,10 +24,8 @@ public class Keygen {
   public void init() {
     rev_byte_table = new int[256];
     rev_hex_table = new int[16];
-    for(int i = 0; i < 256; i++) {
-      rev_byte_table[Global.byte_table[i]] = i;
-      rev_hex_table[Global.hex_table[i]] = i;
-    }
+    for(int i = 0; i < 256; i++) rev_byte_table[Global.byte_table[i]] = i;
+    for(int i = 0; i < 16; i++) rev_hex_table[Global.hex_table[i]] = i;
   }
   
   public int[] nextHexKey(int[] key) {

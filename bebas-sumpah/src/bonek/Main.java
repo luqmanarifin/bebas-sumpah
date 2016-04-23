@@ -20,11 +20,14 @@ public class Main {
   }
   
   public static void main(String[] args) {
-    String s = "aku suka kentang";
-    String key = "jancok";
-    int[] is = toByte(s);
-    int[] ks = toByte(key);
-    for(int i = 0; i < is.length; i++) System.out.println(is[i] + " "); System.out.println("");
-    
+    String s = "1234567890123456";
+    String key = "1234567890titid6";
+    Block is = new Block(8, toByte(s));
+    Block ks = new Block(8, toByte(key));
+    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
+    is = is.e_encrypt(ks);
+    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
+    is = is.e_decrypt(ks);
+    for(int i = 0; i < is.bit.length; i++) System.out.print(is.bit[i] + " "); System.out.println("");
   }
 }

@@ -1,0 +1,356 @@
+00001 /*
+00002  * SHA1.java - An implementation of the SHA-1 Algorithm
+00003  *
+00004  * This version by Chuck McManis (cmcmanis@netcom.com) and
+00005  * still public domain.
+00006  *
+00007  * Adapted for JabberApplet by M.Kiesel
+00008  * This is needed because Java security bugs in some Netscape
+00009  * versions prevent us from using the SHA1 routines that are
+00010  * built-in in Java :-(
+00011  *
+00012  * Based on the C code that Steve Reid wrote his header
+00013  * was :
+00014  *      SHA-1 in C
+00015  *      By Steve Reid <steve@edmweb.com>
+00016  *      100% Public Domain
+00017  *
+00018  *      Test Vectors (from FIPS PUB 180-1)
+00019  *      "abc"
+00020  *      A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
+00021  *      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+00022  *      84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1
+00023  *      A million repetitions of "a"
+00024  *      34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
+00025  */
+00026 
+00027 package gov.fnal.cd.rms.util;
+00028 
+00034 public final class SHA1 {
+00035     private int state[] = new int[5];
+00036     private long count;
+00037     public byte[] digestBits;
+00038     public boolean digestValid;
+00039     
+00040     public SHA1() {
+00041         state = new int[5];
+00042         count = 0;
+00043         if (block == null)
+00044             block = new int[16];
+00045         digestBits = new byte[20];
+00046         digestValid = false;
+00047     }
+00048 
+00052     public synchronized void update(byte input[], int offset, int len) {
+00053         for (int i = 0; i < len; i++) {
+00054             update(input[i+offset]);
+00055         }
+00056     }
+00057     
+00061     public synchronized void update(byte input[]) {
+00062         update(input, 0, input.length);
+00063     }
+00064     
+00068     public void updateASCII(String input) {
+00069         int     i, len;
+00070         byte    x;
+00071         
+00072         len = input.length();
+00073         for (i = 0; i < len; i++) {
+00074             x = (byte) (input.charAt(i) & 0xff);
+00075             update(x);
+00076         }
+00077     }
+00078     
+00079     /*
+00080      * The following array forms the basis for the transform
+00081      * buffer. Update puts bytes into this buffer and then
+00082      * transform adds it into the state of the digest.
+00083      */
+00084     private int block[] = new int[16];
+00085     private int blockIndex;
+00086     
+00087     /*
+00088      * These functions are taken out of #defines in Steve's
+00089      * code. Java doesn't have a preprocessor so the first
+00090      * step is to just promote them to real methods.
+00091      * Later we can optimize them out into inline code,
+00092      * note that by making them final some compilers will
+00093      * inline them when given the -O flag.
+00094      */
+00095     final int rol(int value, int bits) {
+00096         int q = (value << bits) | (value >>> (32 - bits));
+00097         return q;
+00098     }
+00099     
+00100     final int blk0(int i) {
+00101         block[i] = (rol(block[i],24)&0xFF00FF00) | (rol(block[i],8)&0x00FF00FF);
+00102         return block[i];
+00103     }
+00104     
+00105     final int blk(int i) {
+00106         block[i&15] = rol(block[(i+13)&15]^block[(i+8)&15]^
+00107                           block[(i+2)&15]^block[i&15], 1);
+00108         return (block[i&15]);
+00109     }
+00110     
+00111     final void R0(int data[], int v, int w, int x , int y, int z, int i) {
+00112         data[z] += ((data[w] & (data[x] ^ data[y] )) ^ data[y]) +
+00113             blk0(i) + 0x5A827999 + rol(data[v] ,5);
+00114         data[w] = rol(data[w], 30);
+00115     }
+00116     
+00117     final void R1(int data[], int v, int w, int x, int y, int z, int i) {
+00118         data[z] += ((data[w] & (data[x] ^ data[y])) ^ data[y]) +
+00119             blk(i) + 0x5A827999 + rol(data[v] ,5);
+00120         data[w] = rol(data[w], 30);
+00121     }
+00122     
+00123     final void R2(int data[], int v, int w, int x, int y, int z, int i) {
+00124         data[z] += (data[w] ^ data[x] ^ data[y]) +
+00125             blk(i) + 0x6ED9EBA1 + rol(data[v] ,5);
+00126         data[w] = rol(data[w], 30);
+00127     }
+00128     
+00129     final void R3(int data[], int v, int w, int x, int y, int z, int i) {
+00130         data[z] += (((data[w] | data[x]) & data[y]) | (data[w] & data[x])) +
+00131             blk(i) + 0x8F1BBCDC + rol(data[v] ,5);
+00132         data[w] = rol(data[w], 30);
+00133     }
+00134     
+00135     final void R4(int data[], int v, int w, int x, int y, int z, int i) {
+00136         data[z] += (data[w] ^ data[x] ^ data[y]) +
+00137             blk(i) + 0xCA62C1D6 + rol(data[v] ,5);
+00138         data[w] = rol(data[w], 30);
+00139     }
+00140  
+00141     /*
+00142      * Steve's original code and comments :
+00143      *
+00144      * blk0() and blk() perform the initial expand.
+00145      * I got the idea of expanding during the round function from SSLeay
+00146      *
+00147      * #define blk0(i) block->l[i]
+00148      * #define blk(i) (block->l[i&15] = rol(block->l[(i+13)&15]^block->l[(i+8)&15] \
+00149      *   ^block->l[(i+2)&15]^block->l[i&15],1))
+00150      *
+00151      * (R0+R1), R2, R3, R4 are the different operations used in SHA1
+00152      * #define R0(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);
+00153      * #define R1(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);
+00154      * #define R2(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);
+00155      * #define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);
+00156      * #define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
+00157      */
+00158     
+00159     int dd[] = new int[5];
+00160     
+00169     void transform() {  
+00170         /* Copy context->state[] to working vars */
+00171         dd[0] = state[0];
+00172         dd[1] = state[1];
+00173         dd[2] = state[2];
+00174         dd[3] = state[3];
+00175         dd[4] = state[4];
+00176         /* 4 rounds of 20 operations each. Loop unrolled. */
+00177         R0(dd,0,1,2,3,4, 0);
+00178         R0(dd,4,0,1,2,3, 1);
+00179         R0(dd,3,4,0,1,2, 2);
+00180         R0(dd,2,3,4,0,1, 3);
+00181         R0(dd,1,2,3,4,0, 4);
+00182         R0(dd,0,1,2,3,4, 5);
+00183         R0(dd,4,0,1,2,3, 6);
+00184         R0(dd,3,4,0,1,2, 7);
+00185         R0(dd,2,3,4,0,1, 8);
+00186         R0(dd,1,2,3,4,0, 9);
+00187         R0(dd,0,1,2,3,4,10);
+00188         R0(dd,4,0,1,2,3,11);
+00189         R0(dd,3,4,0,1,2,12);
+00190         R0(dd,2,3,4,0,1,13);
+00191         R0(dd,1,2,3,4,0,14);
+00192         R0(dd,0,1,2,3,4,15);
+00193         R1(dd,4,0,1,2,3,16);
+00194         R1(dd,3,4,0,1,2,17);
+00195         R1(dd,2,3,4,0,1,18);
+00196         R1(dd,1,2,3,4,0,19);
+00197         R2(dd,0,1,2,3,4,20);
+00198         R2(dd,4,0,1,2,3,21);
+00199         R2(dd,3,4,0,1,2,22);
+00200         R2(dd,2,3,4,0,1,23);
+00201         R2(dd,1,2,3,4,0,24);
+00202         R2(dd,0,1,2,3,4,25);
+00203         R2(dd,4,0,1,2,3,26);
+00204         R2(dd,3,4,0,1,2,27);
+00205         R2(dd,2,3,4,0,1,28);
+00206         R2(dd,1,2,3,4,0,29);
+00207         R2(dd,0,1,2,3,4,30);
+00208         R2(dd,4,0,1,2,3,31);
+00209         R2(dd,3,4,0,1,2,32);
+00210         R2(dd,2,3,4,0,1,33);
+00211         R2(dd,1,2,3,4,0,34);
+00212         R2(dd,0,1,2,3,4,35);
+00213         R2(dd,4,0,1,2,3,36);
+00214         R2(dd,3,4,0,1,2,37);
+00215         R2(dd,2,3,4,0,1,38);
+00216         R2(dd,1,2,3,4,0,39);
+00217         R3(dd,0,1,2,3,4,40);
+00218         R3(dd,4,0,1,2,3,41);
+00219         R3(dd,3,4,0,1,2,42);
+00220         R3(dd,2,3,4,0,1,43);
+00221         R3(dd,1,2,3,4,0,44);
+00222         R3(dd,0,1,2,3,4,45);
+00223         R3(dd,4,0,1,2,3,46);
+00224         R3(dd,3,4,0,1,2,47);
+00225         R3(dd,2,3,4,0,1,48);
+00226         R3(dd,1,2,3,4,0,49);
+00227         R3(dd,0,1,2,3,4,50);
+00228         R3(dd,4,0,1,2,3,51);
+00229         R3(dd,3,4,0,1,2,52);
+00230         R3(dd,2,3,4,0,1,53);
+00231         R3(dd,1,2,3,4,0,54);
+00232         R3(dd,0,1,2,3,4,55);
+00233         R3(dd,4,0,1,2,3,56);
+00234         R3(dd,3,4,0,1,2,57);
+00235         R3(dd,2,3,4,0,1,58);
+00236         R3(dd,1,2,3,4,0,59);
+00237         R4(dd,0,1,2,3,4,60);
+00238         R4(dd,4,0,1,2,3,61);
+00239         R4(dd,3,4,0,1,2,62);
+00240         R4(dd,2,3,4,0,1,63);
+00241         R4(dd,1,2,3,4,0,64);
+00242         R4(dd,0,1,2,3,4,65);
+00243         R4(dd,4,0,1,2,3,66);
+00244         R4(dd,3,4,0,1,2,67);
+00245         R4(dd,2,3,4,0,1,68);
+00246         R4(dd,1,2,3,4,0,69);
+00247         R4(dd,0,1,2,3,4,70);
+00248         R4(dd,4,0,1,2,3,71);
+00249         R4(dd,3,4,0,1,2,72);
+00250         R4(dd,2,3,4,0,1,73);
+00251         R4(dd,1,2,3,4,0,74);
+00252         R4(dd,0,1,2,3,4,75);
+00253         R4(dd,4,0,1,2,3,76);
+00254         R4(dd,3,4,0,1,2,77);
+00255         R4(dd,2,3,4,0,1,78);
+00256         R4(dd,1,2,3,4,0,79);
+00257         /* Add the working vars back into context.state[] */
+00258         state[0] += dd[0];
+00259         state[1] += dd[1];
+00260         state[2] += dd[2];
+00261         state[3] += dd[3];
+00262         state[4] += dd[4];
+00263     }
+00264     
+00269     public void init() {
+00270         /* SHA1 initialization constants */
+00271         state[0] = 0x67452301;
+00272         state[1] = 0xEFCDAB89;
+00273         state[2] = 0x98BADCFE;
+00274         state[3] = 0x10325476;
+00275         state[4] = 0xC3D2E1F0;
+00276         count = 0;
+00277         digestBits = new byte[20];
+00278         digestValid = false;
+00279         blockIndex = 0;
+00280     }
+00281     
+00287     public synchronized void update(byte b) {
+00288         int mask = (8 * (blockIndex & 3));
+00289         
+00290         count += 8;
+00291         block[blockIndex >> 2] &= ~(0xff << mask);
+00292         block[blockIndex >> 2] |= (b & 0xff) << mask;
+00293         blockIndex++;
+00294         if (blockIndex == 64) {
+00295             transform();
+00296             blockIndex = 0;
+00297         }
+00298     }
+00299     
+00300     
+00304     public void finish() {
+00305         byte bits[] = new byte[8];
+00306         int i, j;
+00307         
+00308         for (i = 0; i < 8; i++) {
+00309             bits[i] = (byte)((count >>> (((7 - i) * 8))) & 0xff);
+00310         }
+00311         
+00312         update((byte) 128);
+00313         while (blockIndex != 56)
+00314             update((byte) 0);
+00315         // This should cause a transform to happen.
+00316         update(bits);
+00317         for (i = 0; i < 20; i++) {
+00318             digestBits[i] = (byte)
+00319                 ((state[i>>2] >> ((3-(i & 3)) * 8) ) & 0xff);
+00320         }
+00321         digestValid = true;
+00322     }
+00323     
+00325     public String getAlg() {
+00326         return "SHA1";
+00327     }
+00328     
+00333     public String digout() {
+00334         StringBuffer sb = new StringBuffer();
+00335         for (int i = 0; i < 20; i++) {
+00336             char c1, c2;
+00337             
+00338             c1 = (char) ((digestBits[i] >>> 4) & 0xf);
+00339             c2 = (char) (digestBits[i] & 0xf);
+00340             c1 = (char) ((c1 > 9) ? 'a' + (c1 - 10) : '0' + c1);
+00341             c2 = (char) ((c2 > 9) ? 'a' + (c2 - 10) : '0' + c2);
+00342             sb.append(c1);
+00343             sb.append(c2);
+00344             /*            if (((i+1) % 4) == 0)
+00345                           sb.append(' '); */
+00346         }
+00347         return sb.toString();
+00348     }
+00349     
+00350     
+00367     public static void main(String args[]) {
+00368         int i, j;
+00369         SHA1 s = new SHA1();
+00370         
+00371         System.out.println("SHA-1 Test PROGRAM.");
+00372         System.out.println("This code runs the test vectors through the code.");
+00373         
+00374         /*      "abc"
+00375                 A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D */
+00376         
+00377         System.out.println("First test is 'abc'");
+00378         String z = "abc";
+00379         s.init();
+00380         s.update((byte) 'a');
+00381         s.update((byte) 'b');
+00382         s.update((byte) 'c');
+00383         s.finish();
+00384         System.out.println(s.digout());
+00385         System.out.println("A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D");
+00386         
+00387         
+00388         /*      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+00389                 84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1 */
+00390         
+00391         System.out.println("Next Test is 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq'");
+00392         z = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+00393         s.init();
+00394         s.updateASCII(z);
+00395         s.finish();
+00396         System.out.println(s.digout());
+00397         System.out.println("84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1");
+00398         
+00399         /*      A million repetitions of "a"
+00400                 34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F */
+00401         
+00402         System.out.println("Last test is 1 million 'a' characters.");
+00403         s.init();
+00404         for (i = 0; i < 1000000; i++)
+00405             s.update((byte) 'a');
+00406         s.finish();
+00407         System.out.println(s.digout());
+00408         System.out.println("34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F");
+00409     }
+00410 }
+00411 

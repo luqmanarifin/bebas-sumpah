@@ -22,6 +22,20 @@ public class Main {
     for(byte i : b) System.out.print(i + " "); System.out.println("");
     a = new String(b);
     System.out.println(a);
+    
+    Kelas k = new Kelas();
+    k.a().b();
   }
   
+  public static class Kelas {
+    public Kelas() {}
+    public Kelas a() {
+      System.out.println("a");
+      return this;
+    }
+    public Kelas b() {
+      System.out.println("b");
+      return this;
+    }
+  }
 }

@@ -15,6 +15,13 @@ public class Main {
    */
   public static void main(String[] args) {
     // TODO code application logic here
+    
+    /* convert string to byte[] and vice versa */
+    String a = "asu";
+    byte[] b = a.getBytes();
+    for(byte i : b) System.out.print(i + " "); System.out.println("");
+    a = new String(b);
+    System.out.println(a);
   }
   
 }

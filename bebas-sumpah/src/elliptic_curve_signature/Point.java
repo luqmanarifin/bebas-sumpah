@@ -1,5 +1,7 @@
 package elliptic_curve_signature;
 
+import java.math.BigInteger;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,16 +13,18 @@ package elliptic_curve_signature;
  * @author Luqman A. Siswanto
  */
 public class Point {
-  public long x, y;
+  public BigInteger x;
+  public BigInteger y;
+  
   public Point() {
-    x = 0;
-    y = 0;
+    x = BigInteger.valueOf(0);
+    y = BigInteger.valueOf(0);
   }
   public Point(boolean isZero) {
-    x = -1;
-    y = -1;
+    x = BigInteger.valueOf(-1);
+    y = BigInteger.valueOf(-1);
   }
-  public Point(long x, long y) {
+  public Point(BigInteger x, BigInteger y) {
     this.x = x;
     this.y = y;
   }
@@ -29,14 +33,14 @@ public class Point {
     this.y = p.y;
   }
   public boolean isZero() {
-    return this.x == -1 && this.y == -1;
+    return this.x.compareTo(BigInteger.valueOf(-1)) == 0 && this.y.compareTo(BigInteger.valueOf(-1)) == 0;
   }
   public boolean equals(Point p) {
-    return this.x == p.x && this.y == p.y;
+    return this.x.equals(p.x) && this.y.equals(p.y);
   }
   @Override
   public String toString() {
-    return "{" + this.x + ", " + this.y + ")";
+    return "{" + this.x.toString(16) + "\n" + this.y.toString(16) + ")\n";
   }
   
   // this + p
@@ -45,20 +49,19 @@ public class Point {
     if(p.isZero()) return new Point(this);
     if(this.equals(p.negate())) return new Point(true);
     if(this.equals(p)) {      // find gradien using tangent, different method than standard adding
-      if(this.y == 0) return new Point(true);
-      long d = ((3*this.x%Constant.p*this.x%Constant.p + Constant.a) * Constant.inv(2 * this.y)) % Constant.p;
-      if(d < 0) d += Constant.p;
-      long ra = (d * d - 2 * this.x) % Constant.p;
-      if(ra < 0) ra += Constant.p;
-      long rb = (d * (this.x - ra) - this.y) % Constant.p;
-      if(rb < 0) rb += Constant.p;
+      if(this.y.compareTo(BigInteger.valueOf(0)) == 0) return new Point(true);
+      BigInteger d = BigInteger.valueOf(3).multiply(this.x).mod(Constant.p).multiply(this.x).mod(Constant.p).add(Constant.a).multiply(Constant.inv(BigInteger.valueOf(2).multiply(this.y))).mod(Constant.p);
+      BigInteger ra = d.multiply(d).subtract(BigInteger.valueOf(2).multiply(this.x)).mod(Constant.p);
+      if(ra.compareTo(BigInteger.valueOf(0)) == -1) ra = ra.add(Constant.p);
+      BigInteger rb = d.multiply(this.x.subtract(ra)).subtract(this.y).mod(Constant.p);
+      if(rb.compareTo(BigInteger.valueOf(0)) == -1) rb = rb.add(Constant.p);
       return new Point(ra, rb);
     }
-    long d = ((this.y - p.y) * Constant.inv(this.x - p.x)) % Constant.p;
-    long ra = (d * d - this.x - p.x) % Constant.p;
-    if(ra < 0) ra += Constant.p;
-    long rb = (d * (this.x - ra) - this.y) % Constant.p;
-    if(rb < 0) rb += Constant.p;
+    BigInteger d = this.y.subtract(p.y).multiply(Constant.inv(this.x.subtract(p.x))).mod(Constant.p);
+    BigInteger ra = d.multiply(d).subtract(this.x).subtract(p.x).mod(Constant.p);
+    if(ra.compareTo(BigInteger.valueOf(0)) == -1) ra = ra.add(Constant.p);
+    BigInteger rb = (d.multiply(this.x.subtract(ra)).subtract(this.y)).mod(Constant.p);
+    if(rb.compareTo(BigInteger.valueOf(0)) == -1) rb = rb.add(Constant.p);
     return new Point(ra, rb);
   }
   
@@ -70,31 +73,17 @@ public class Point {
   // -this
   public Point negate() {
     if(isZero()) return new Point(this);
-    return new Point(this.x, (-this.y + Constant.p) % Constant.p);
+    return new Point(this.x, this.y.negate().add(Constant.p).mod(Constant.p));
   }
   
   // p * k
-  public static Point multiply(Point p, int k) {
-    if(k == 0) return new Point(true);
-    Point temp = multiply(p, k / 2);
+  public static Point multiply(Point p, BigInteger k) {
+    if(k.compareTo(BigInteger.valueOf(0)) == 0) return new Point(true);
+    Point temp = multiply(p, k.divide(BigInteger.valueOf(2)));
     temp = temp.add(temp);
-    if(k % 2 == 1) {
+    if(k.mod(BigInteger.valueOf(2)).compareTo(BigInteger.valueOf(1)) == 0) {
       temp = temp.add(p);
     }
     return temp;
-  }
-  
-  public Pair<Point, Point> encrypt(Point publicKey) {
-    int k = (int) Constant.getRandom(1, Constant.p - 1);
-    Point c1 = multiply(Constant.P, k);
-    Point c2 = multiply(publicKey, k);
-    c2 = this.add(c2);
-    return new Pair(c1, c2);
-  }
-  public static Point decrypt(Pair<Point, Point> cipher, int secretKey) {
-    Point c = cipher.first;
-    Point d = cipher.second;
-    c = multiply(c, secretKey);
-    return d.subtract(c);
   }
 }

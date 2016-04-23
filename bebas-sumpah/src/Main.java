@@ -30,6 +30,11 @@ public class Main {
     k.a().b();
     BigInteger big = new BigInteger("10", 16);
     System.out.println(big);
+    
+    BigInteger num = BigInteger.valueOf(4);
+    BigInteger numb = num;
+    num = num.add(BigInteger.valueOf(5));
+    System.out.println(num + " " + numb);
   }
   
   public static class Kelas {

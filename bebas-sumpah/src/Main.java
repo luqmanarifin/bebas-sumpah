@@ -55,11 +55,12 @@ public class Main {
   public static void main(String[] args) {
     String message = "ciee yang udah dapet macbook trus gak ikutan codejam m(_ _)m";
     int[] a = toByte(message);
-    Pair<Point, BigInteger> key = Constant.getKey();
-    Ecdsa dsa = new Ecdsa();
     
     System.out.println("before encrypted");
     print(a);
+    
+    // get generated key pair (public - private)
+    Pair<Point, BigInteger> key = Constant.getKey();
     
     // normalizing the symmetric encryption key, because all Block Cipher stuff must be normal
     String encryptKey = "kentang goreng";
@@ -71,13 +72,13 @@ public class Main {
     print(a);
     
     // signing the message, param : int[] message, BigInteger secretKey
+    Ecdsa dsa = new Ecdsa();
     Pair<BigInteger, BigInteger> signature = dsa.sign(a, key.second);
-    
-    // verify the digital signature, param : int[] message, Point publicKey, Pair<Bigint, Bigint> signature
-    signature.second = signature.second.add(BigInteger.valueOf(0));
     
     System.out.println("\ndigital signature");
     System.out.println(signature);
+    
+    // verify the digital signature, param : int[] message, Point publicKey, Pair<Bigint, Bigint> signature
     System.out.println(dsa.verify(a, key.first, signature)? "VERIFIED" : "NOT VERIFIED");
     
     a = new BonekAlgorithm().decrypt(a, simKey);

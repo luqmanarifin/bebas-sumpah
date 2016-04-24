@@ -15,6 +15,8 @@ import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 
+import java.math.BigInteger;
+
 import bonek.BonekAlgorithm;
 import elliptic_curve_signature.Ecdsa;
 
@@ -28,7 +30,6 @@ import elliptic_curve_signature.Ecdsa;
  * create an instance of this fragment.
  */
 public class ComposeFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_ADDRESS = "arg_address";
     private static final String ARG_X = "arg_x";
@@ -37,6 +38,11 @@ public class ComposeFragment extends Fragment {
 
     private String address;
     private Key key;
+
+    private Mail draftMail = null;
+
+    private OnSendListener mListener = null;
+
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -82,61 +88,48 @@ public class ComposeFragment extends Fragment {
             @Override
             public void onClick(View clickedView) {
                 Mail mail = extractMailFromInput(v);
-                sendMail(mail);
-
+                getFragmentManager().popBackStack();
+                mListener.sendMail(mail);
             }
         });
         return v;
     }
+
 
     private Mail extractMailFromInput(View v) {
         EditText textTo = (EditText)v.findViewById(R.id.edit_text_recipient);
         EditText textSubject = (EditText)v.findViewById(R.id.edit_text_subject);
         EditText textMessage = (EditText)v.findViewById(R.id.edit_text_message);
 
-        CheckBox boxEncrypt = (CheckBox)v.findViewById(R.id.checkbox_encrypt);
-        CheckBox boxSign = (CheckBox)v.findViewById(R.id.checkbox_sign);
-
         String to = textTo.getText().toString();
         String subject = textSubject.getText().toString();
         String message = textMessage.getText().toString();
 
-        if (boxEncrypt.isChecked()) {
-            BonekAlgorithm bonekAlgorithm = new BonekAlgorithm();
+        CheckBox boxEncrypt = (CheckBox)v.findViewById(R.id.checkbox_encrypt);
+        CheckBox boxSign = (CheckBox)v.findViewById(R.id.checkbox_sign);
 
-
-        }
-
-        if (boxSign.isChecked()) {
-            Ecdsa dsa = new Ecdsa();
-        }
-
-
-        return new Mail(address, to, subject, message);
+        return new Mail(address, to, subject, message, boxEncrypt.isChecked(), boxSign.isChecked());
     }
 
-    private void sendMail(Mail mail) {
-        Backendless.Persistence.of(Mail.class).save(mail, new AsyncCallback<Mail>() {
-            @Override
-            public void handleResponse(Mail response) {
-                getFragmentManager().popBackStack();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Log.d(ComposeFragment.class.getSimpleName(), fault.toString());
-            }
-        });
-    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if (context instanceof OnSendListener) {
+            mListener = (OnSendListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnKeyDialogListener");
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener = null;
     }
 
+    public interface OnSendListener {
+        void sendMail(Mail mail);
+    }
 }

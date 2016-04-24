@@ -1,7 +1,6 @@
 package com.dancinggrass.prophetaria.bebassumpah;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -15,15 +14,15 @@ import android.widget.EditText;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link OnLoginDialogListener} interface
+ * {@link KeyDialogFragment.OnKeyDialogListener} interface
  * to handle interaction events.
- * Use the {@link LoginDialogFragment#newInstance} factory method to
+ * Use the {@link KeyDialogFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginDialogFragment extends DialogFragment {
-    private OnLoginDialogListener mListener;
+public class KeyDialogFragment extends DialogFragment {
+    private OnKeyDialogListener mListener;
 
-    public LoginDialogFragment() {
+    public KeyDialogFragment() {
         // Required empty public constructor
     }
 
@@ -31,10 +30,10 @@ public class LoginDialogFragment extends DialogFragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment LoginDialogFragment.
+     * @return A new instance of fragment KeyDialogFragment.
      */
-    public static LoginDialogFragment newInstance() {
-        LoginDialogFragment fragment = new LoginDialogFragment();
+    public static KeyDialogFragment newInstance() {
+        KeyDialogFragment fragment = new KeyDialogFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -52,15 +51,15 @@ public class LoginDialogFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        final View v = inflater.inflate(R.layout.fragment_login_dialog, container, false);
-        Button loginButton = (Button)v.findViewById(R.id.button_login);
-        loginButton.setOnClickListener(new View.OnClickListener() {
+        final View v = inflater.inflate(R.layout.fragment_key_dialog, container, false);
+        Button submitButton = (Button)v.findViewById(R.id.button_submit);
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View clickedView) {
-                EditText addressText = (EditText)v.findViewById(R.id.edit_text_address);
+                EditText keyText = (EditText)v.findViewById(R.id.edit_text_key);
                 if (mListener != null) {
                     dismiss();
-                    mListener.onLogin(addressText.getText().toString());
+                    mListener.sendEncryptedMail(keyText.getText().toString());
                 }
             }
         });
@@ -71,8 +70,8 @@ public class LoginDialogFragment extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnLoginDialogListener) {
-            mListener = (OnLoginDialogListener) context;
+        if (context instanceof OnKeyDialogListener) {
+            mListener = (OnKeyDialogListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnKeyDialogListener");
@@ -85,7 +84,7 @@ public class LoginDialogFragment extends DialogFragment {
         mListener = null;
     }
 
-    public interface OnLoginDialogListener {
-        void onLogin(String address);
+    public interface OnKeyDialogListener {
+        void sendEncryptedMail(String key);
     }
 }

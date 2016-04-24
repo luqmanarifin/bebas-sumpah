@@ -9,6 +9,7 @@
     <string name="button_inbox">Inbox</string>
     <string name="button_send">Send</string>
     <string name="button_login">Login</string>
+    <string name="button_submit">Submit</string>
 
     <string name="checkbox_encrypt">E</string>
     <string name="checkbox_sign">S</string>
@@ -16,6 +17,7 @@
     <string name="hint_email_recipient">To</string>
     <string name="hint_email_subject">Subject</string>
     <string name="hint_email_content">Message</string>
+    <string name="hint_key">Key</string>
 
     <string name="hint_login_address">Login Address</string>
 

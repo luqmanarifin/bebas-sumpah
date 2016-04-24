@@ -81,11 +81,11 @@ public class SentFragment extends Fragment {
     public void onStart() {
         super.onStart();
         View v = getView();
-        ListView lv = (ListView)v.findViewById(R.id.inbox);
+        ListView lv = (ListView)v.findViewById(R.id.sent);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(InboxFragment.class.getSimpleName(), String.valueOf(position));
+                Log.d(SentFragment.class.getSimpleName(), String.valueOf(position));
                 Mail mail = mails.get(position);
                 mListener.onMailSelected(mail);
             }
@@ -125,7 +125,7 @@ public class SentFragment extends Fragment {
             mListener = (OnMailSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnLoginDialogListener");
+                    + " must implement OnKeyDialogListener");
         }
     }
 

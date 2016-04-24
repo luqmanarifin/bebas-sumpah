@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
@@ -19,17 +21,22 @@ import com.backendless.persistence.BackendlessDataQuery;
 import java.math.BigInteger;
 import java.util.List;
 
+import bonek.BonekAlgorithm;
 import elliptic_curve_signature.Constant;
+import elliptic_curve_signature.Ecdsa;
 import elliptic_curve_signature.Pair;
 import elliptic_curve_signature.Point;
 
 public class MailActivity extends AppCompatActivity
         implements
         OnMailSelectedListener,
-        LoginDialogFragment.OnLoginDialogListener {
+        ComposeFragment.OnSendListener,
+        LoginDialogFragment.OnLoginDialogListener,
+        KeyDialogFragment.OnKeyDialogListener {
 
     String address = null;
     Key key = null;
+    Mail draftMail = null;
 
     InboxFragment inboxFragment = null;
     SentFragment sentFragment = null;
@@ -87,6 +94,55 @@ public class MailActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    public void sendEncryptedMail(String key) {
+        BonekAlgorithm bonekAlgorithm = new BonekAlgorithm();
+        draftMail.message = bonekAlgorithm.encrypt(draftMail.message, key);
+        postMail(draftMail);
+    }
+
+
+
+    public void sendMail(Mail mail) {
+        if (mail.type_encrypted) {
+            draftMail = mail;
+            KeyDialogFragment keyDialogFragment = KeyDialogFragment.newInstance();
+            keyDialogFragment.show(getSupportFragmentManager(), "Key Dialog Fragment");
+        }
+        else {
+            postMail(mail);
+        }
+
+    }
+
+    private void postMail(Mail mail) {
+        if (mail.type_signature) {
+            signMail(mail);
+        }
+
+        Backendless.Persistence.of(Mail.class).save(mail, new AsyncCallback<Mail>() {
+            @Override
+            public void handleResponse(Mail response) {
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.d(ComposeFragment.class.getSimpleName(), fault.toString());
+            }
+        });
+    }
+
+    private void signMail(Mail mail) {
+        Ecdsa dsa = new Ecdsa();
+        String signature = dsa.sign(mail.message, new BigInteger(key.start));
+        mail.message += addTag(signature);
+    }
+
+    private String addTag(String content) {
+        final String startTag = "<ds>";
+        final String endTag = "</ds>";
+        return startTag + content + endTag;
     }
 
     private String toClauseString(String clause) {

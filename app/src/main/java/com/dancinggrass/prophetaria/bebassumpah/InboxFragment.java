@@ -129,7 +129,7 @@ public class InboxFragment extends Fragment {
             mListener = (OnMailSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnLoginDialogListener");
+                    + " must implement OnKeyDialogListener");
         }
     }
 

@@ -163,8 +163,8 @@ public class MailActivity extends AppCompatActivity
     }
 
     private ComposeFragment getComposeFragment() {
-        if (composeFragment == null && address != null)
-            composeFragment = ComposeFragment.newInstance(address);
+        if (composeFragment == null && address != null && key != null)
+            composeFragment = ComposeFragment.newInstance(address, key);
         return composeFragment;
     }
 

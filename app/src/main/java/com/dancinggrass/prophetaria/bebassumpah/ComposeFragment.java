@@ -18,7 +18,7 @@ import com.backendless.exceptions.BackendlessFault;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link ComposeFragment.OnFragmentInteractionListener} interface
+ * {@link OnMailSelectedListener} interface
  * to handle interaction events.
  * Use the {@link ComposeFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -27,9 +27,12 @@ public class ComposeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_ADDRESS = "arg_address";
-
+    private static final String ARG_X = "arg_x";
+    private static final String ARG_Y= "arg_y";
+    private static final String ARG_START= "arg_start";
 
     private String address;
+    private Key key;
 
     public ComposeFragment() {
         // Required empty public constructor
@@ -42,11 +45,13 @@ public class ComposeFragment extends Fragment {
      * @param address Parameter 1.
      * @return A new instance of fragment ComposeFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ComposeFragment newInstance(String address) {
+    public static ComposeFragment newInstance(String address, Key encryptKey) {
         ComposeFragment fragment = new ComposeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_ADDRESS, address);
+        args.putString(ARG_X, encryptKey.getX());
+        args.putString(ARG_Y, encryptKey.getY());
+        args.putString(ARG_START, encryptKey.getStart());
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,6 +61,10 @@ public class ComposeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             address = getArguments().getString(ARG_ADDRESS);
+            String x = getArguments().getString(ARG_X);
+            String y = getArguments().getString(ARG_Y);
+            String start = getArguments().getString(ARG_START);
+            key = new Key(address, x, y, start);
         }
     }
 
@@ -68,28 +77,36 @@ public class ComposeFragment extends Fragment {
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View clickedView) {
-                EditText textTo = (EditText)v.findViewById(R.id.edit_text_recipient);
-                EditText textSubject = (EditText)v.findViewById(R.id.edit_text_subject);
-                EditText textMessage = (EditText)v.findViewById(R.id.edit_text_message);
-                String to = textTo.getText().toString();
-                String subject = textSubject.getText().toString();
-                String message = textMessage.getText().toString();
-                Mail mail = new Mail(address, to, subject, message);
-                Backendless.Persistence.of(Mail.class).save(mail, new AsyncCallback<Mail>() {
-                    @Override
-                    public void handleResponse(Mail response) {
-                        getFragmentManager().popBackStack();
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Log.d(ComposeFragment.class.getSimpleName(), fault.toString());
-                    }
-                });
+                Mail mail = extractMailFromInput(v);
+                sendMail(mail);
 
             }
         });
         return v;
+    }
+
+    private Mail extractMailFromInput(View v) {
+        EditText textTo = (EditText)v.findViewById(R.id.edit_text_recipient);
+        EditText textSubject = (EditText)v.findViewById(R.id.edit_text_subject);
+        EditText textMessage = (EditText)v.findViewById(R.id.edit_text_message);
+        String to = textTo.getText().toString();
+        String subject = textSubject.getText().toString();
+        String message = textMessage.getText().toString();
+        return new Mail(address, to, subject, message);
+    }
+
+    private void sendMail(Mail mail) {
+        Backendless.Persistence.of(Mail.class).save(mail, new AsyncCallback<Mail>() {
+            @Override
+            public void handleResponse(Mail response) {
+                getFragmentManager().popBackStack();
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.d(ComposeFragment.class.getSimpleName(), fault.toString());
+            }
+        });
     }
 
     @Override

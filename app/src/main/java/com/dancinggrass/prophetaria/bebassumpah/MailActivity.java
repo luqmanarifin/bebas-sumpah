@@ -225,11 +225,24 @@ public class MailActivity extends AppCompatActivity
 
 
     @Override
-    public void onMailSelected(Mail mail) {
-        mail = unpack(mail);
-        if (mail != null) {
-            changeFragment(MailFragment.newInstance(mail));
-        }
+    public void onMailSelected(final Mail mail) {
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        query.setWhereClause("address = " + toClauseString(mail.from));
+        Backendless.Persistence.of(Key.class).findFirst(new AsyncCallback<Key>() {
+            @Override
+            public void handleResponse(Key response) {
+                Mail unpackedMail = unpack(mail, response);
+                if (unpackedMail != null) {
+                    changeFragment(MailFragment.newInstance(unpackedMail));
+                }
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+            }
+        });
+
     }
 
     public void onGetKey(String key) {
@@ -239,27 +252,33 @@ public class MailActivity extends AppCompatActivity
         changeFragment(MailFragment.newInstance(mail));
     }
 
-    public Mail unpack(Mail mail) {
+    public Mail unpack(Mail mail, Key key) {
         if (mail.type_signature) {
-            int occurence = mail.to.indexOf("<ds>");
-            String mailSignature = mail.to.substring(occurence).replace("<ds>", "").replace("</ds>", "");
-            String mailMessage = mail.to.substring(0, occurence);
+            int occurence = mail.message.indexOf("<ds>");
+            String mailSignature = mail.message.substring(occurence).replace("<ds>", "").replace("</ds>", "");
+            String mailMessage = mail.message.substring(0, occurence);
+
             Ecdsa dsa = new Ecdsa();
             if (!dsa.verify(mailMessage, new Point(new BigInteger(key.x), new BigInteger(key.y)), mailSignature)) {
                 mail.message = "Failed to verify message";
                 return mail;
             }
             else {
-                mail.message = mailMessage;
+                return unpackEncryption(mail);
             }
         }
+        else {
+            return unpackEncryption(mail);
+        }
+    }
+
+    public Mail unpackEncryption(Mail mail) {
         if (mail.type_encrypted) {
             draftMail = mail;
             DecryptKeyDialogFragment keyDialogFragment = DecryptKeyDialogFragment.newInstance();
             keyDialogFragment.show(getSupportFragmentManager(), "Key Dialog Fragment");
             return null;
-        }
-        else {
+        } else {
             return mail;
         }
     }

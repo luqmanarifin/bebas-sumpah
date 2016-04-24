@@ -1,4 +1,8 @@
 
+import elliptic_curve_signature.Constant;
+import elliptic_curve_signature.Ecdsa;
+import elliptic_curve_signature.Pair;
+import elliptic_curve_signature.Point;
 import java.math.BigInteger;
 
 /*
@@ -20,11 +24,11 @@ public class Main {
     // TODO code application logic here
     
     /* convert string to byte[] and vice versa */
-    String a = "asu";
-    byte[] b = a.getBytes();
-    for(byte i : b) System.out.print(i + " "); System.out.println("");
-    a = new String(b);
-    System.out.println(a);
+    String aa = "asu";
+    byte[] bb = aa.getBytes();
+    for(byte i : bb) System.out.print(i + " "); System.out.println("");
+    aa = new String(bb);
+    System.out.println(aa);
     
     Kelas k = new Kelas();
     k.a().b();
@@ -35,6 +39,14 @@ public class Main {
     BigInteger numb = num;
     num = num.add(BigInteger.valueOf(5));
     System.out.println(num + " " + numb);
+    
+    int[] a = {1, 2, 3, 4, 5};
+    System.out.println(a);
+    Pair<Point, BigInteger> key = Constant.getKey();
+    Ecdsa dsa = new Ecdsa();
+    Pair<BigInteger, BigInteger> signature = dsa.sign(a, key.second);
+    System.out.println(signature);
+    System.out.println(dsa.verify(a, key.first, signature));
   }
   
   public static class Kelas {

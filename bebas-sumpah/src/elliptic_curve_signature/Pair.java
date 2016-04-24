@@ -21,6 +21,6 @@ public class Pair<K, E> {
   
   @Override
   public String toString() {
-    return "{" + first.toString() + ", " + second.toString() + ")"; 
+    return first.toString() + "\n" + second.toString() + "\n"; 
   }
 }

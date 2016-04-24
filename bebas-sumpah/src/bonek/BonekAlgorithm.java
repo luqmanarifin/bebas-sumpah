@@ -5,6 +5,10 @@
  */
 package bonek;
 
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Luqman A. Siswanto
@@ -110,12 +114,17 @@ public class BonekAlgorithm {
    * @return 
    */
   public static int[] toByte(String s) {
-    byte[] b = s.getBytes();
-    int[] ret = new int[b.length];
-    for(int i = 0; i < ret.length; i++) {
-      ret[i] = b[i] + 128;
+    try {
+      byte[] b = s.getBytes("UTF-8");
+      int[] ret = new int[s.length()];
+      for(int i = 0; i < ret.length; i++) {
+        ret[i] = b[i] + 128;
+      }
+      return ret;
+    } catch (UnsupportedEncodingException ex) {
+      Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
-    return ret;
+    return null;
   }
   
   /**
@@ -124,34 +133,58 @@ public class BonekAlgorithm {
    * @return 
    */
   public static String toString(int[] a) {
-    byte[] b = new byte[a.length];
-    for(int i = 0; i < a.length; i++) {
-      b[i] = (byte) (a[i] - 128);
+    try {
+      byte[] b = new byte[a.length];
+      for(int i = 0; i < a.length; i++) {
+        b[i] = (byte) (a[i] - 128);
+      }
+      return new String(b, "UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
-    return new String(b);
+    return null;
+  }
+  
+  public static int[] toByteHex(String s) {
+    int[] a = new int[s.length() / 2];
+    for(int i = 0; i + i < s.length(); i++) {
+      String sub = s.substring(i + i, i + i + 2);
+      a[i] = Integer.parseInt(sub, 16);
+    }
+    return a;
+  }
+  
+  public static String toStringHex(int[] a) {
+    StringBuilder str = new StringBuilder();
+    for(int i = 0; i < a.length; i++) {
+      StringBuilder hex = new StringBuilder(Integer.toHexString(a[i]));
+      if(hex.length() == 1) {
+        hex = new StringBuilder("0" + hex.charAt(0));
+      }
+      str.append(hex);
+    }
+    return str.toString();
   }
   
   public int[] encrypt(int[] plain, int[] key) {
     Block[] b = toArrayBlock(plain);
-    key = Keygen.normalize(key);
     return toArrayInt(encrypt(b, key));
   }
   
   public int[] decrypt(int[] cipher, int[] key) {
     Block[] b = toArrayBlock(cipher);
-    key = Keygen.normalize(key);
     return toArrayInt(decrypt(b, key));
   }
   
   public String encrypt(String _plain, String _key) {
     int[] plain = toByte(_plain);
-    int[] key = toByte(_key);
-    return toString(encrypt(plain, key));
+    int[] key = Keygen.normalize(toByte(_key));
+    return toStringHex(encrypt(plain, key));
   }
   
   public String decrypt(String _cipher, String _key) {
-    int[] cipher = toByte(_cipher);
-    int[] key = toByte(_key);
+    int[] cipher = toByteHex(_cipher);
+    int[] key = Keygen.normalize(toByte(_key));
     return toString(decrypt(cipher, key));
   }
 }

@@ -5,7 +5,10 @@ import elliptic_curve_signature.Constant;
 import elliptic_curve_signature.Ecdsa;
 import elliptic_curve_signature.Pair;
 import elliptic_curve_signature.Point;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -27,12 +30,7 @@ public class Main {
    * @return 
    */
   public static int[] toByte(String s) {
-    byte[] b = s.getBytes();
-    int[] ret = new int[b.length];
-    for(int i = 0; i < ret.length; i++) {
-      ret[i] = b[i] + 128;
-    }
-    return ret;
+    return BonekAlgorithm.toByte(s);
   }
   
   /**
@@ -41,11 +39,7 @@ public class Main {
    * @return 
    */
   public static String toString(int[] a) {
-    byte[] b = new byte[a.length];
-    for(int i = 0; i < a.length; i++) {
-      b[i] = (byte) (a[i] - 128);
-    }
-    return new String(b);
+    return BonekAlgorithm.toString(a);
   }
   
   public static void print(int[] a) {
@@ -53,6 +47,7 @@ public class Main {
   }
   
   public static void main(String[] args) {
+    /*
     String message = "ciee yang udah dapet macbook trus gak ikutan codejam m(_ _)m";
     int[] a = toByte(message);
     
@@ -88,6 +83,16 @@ public class Main {
     
     System.out.println("original message");
     System.out.println(toString(a));
+    */
+    
+    BonekAlgorithm bonek = new BonekAlgorithm();
+    String s = "asu kon emang jancok";
+    String sim = "cok";
+    String enc = bonek.encrypt(s, sim);
+    System.out.println(s);
+    //System.out.println(BonekAlgorithm.toStringHex(BonekAlgorithm.toByteHex(s)));
+    System.out.println(enc);
+    System.out.println(bonek.decrypt(enc, sim));
   }
   
 }

@@ -11,12 +11,11 @@ package bonek;
  */
 public class Main {
   public static int[] toByte(String s) {
-    byte[] b = s.getBytes();
-    int[] ret = new int[b.length];
-    for(int i = 0; i < ret.length; i++) {
-      ret[i] = b[i] + 128;
-    }
-    return ret;
+    return BonekAlgorithm.toByte(s);
+  }
+  
+  public String toString(int[] a) {
+    return BonekAlgorithm.toString(a);
   }
   
   public static void main(String[] args) {

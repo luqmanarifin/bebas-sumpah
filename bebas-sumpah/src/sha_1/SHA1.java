@@ -26,6 +26,7 @@
 
 package sha_1;
 
+import bonek.BonekAlgorithm;
 import java.math.BigInteger;
 
 public final class SHA1 {
@@ -311,20 +312,11 @@ public final class SHA1 {
   }
 
   public static int[] toByte(String s) {
-    byte[] b = s.getBytes();
-    int[] ret = new int[b.length];
-    for(int i = 0; i < ret.length; i++) {
-      ret[i] = b[i] + 128;
-    }
-    return ret;
+    return BonekAlgorithm.toByte(s);
   }
   
   public String toString(int[] a) {
-    byte[] b = new byte[a.length];
-    for(int i = 0; i < a.length; i++) {
-      b[i] = (byte) (a[i] - 128);
-    }
-    return new String(b);
+    return BonekAlgorithm.toString(a);
   }
   
   public BigInteger getDigest(int[] a) {

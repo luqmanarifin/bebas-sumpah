@@ -11,16 +11,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import com.backendless.Backendless;
 
 public class MailActivity extends AppCompatActivity
         implements InboxFragment.OnMailSelectedListener {
 
+    InboxFragment inboxFragment = null;
+    //SentFragment sentFragment;
+    ComposeFragment composeFragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail);
+
 
         // Initialize backendless
         String appVersion = "v1";
@@ -29,6 +35,31 @@ public class MailActivity extends AppCompatActivity
                 getResources().getString(R.string.android_key),
                 appVersion);
 
+
+        Button inbox = (Button)findViewById(R.id.button_inbox);
+        inbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeFragment(getInboxFragment());
+            }
+        });
+        Button sent = (Button)findViewById(R.id.button_sent);
+        sent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /* STUB
+                ComposeFragment fragment = new ComposeFragment();
+                changeFragment(fragment);
+                */
+            }
+        });
+        Button compose = (Button)findViewById(R.id.button_compose);
+        compose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeFragment(getComposeFragment());
+            }
+        });
 
         if (findViewById(R.id.fragment_container) != null) {
 
@@ -40,25 +71,32 @@ public class MailActivity extends AppCompatActivity
             }
 
             // Create a new Fragment to be placed in the activity layout
-            InboxFragment firstFragment = InboxFragment.newInstance("to@gmail.com");
+            if (inboxFragment == null)
+                inboxFragment = InboxFragment.newInstance("to@gmail.com");
 
             // Add the fragment to the 'fragment_container' FrameLayout
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, firstFragment).commit();
+                    .add(R.id.fragment_container, inboxFragment).commit();
         }
-
-
     }
+
+    private InboxFragment getInboxFragment() {
+        if (inboxFragment == null)
+            inboxFragment = InboxFragment.newInstance("to@gmail.com");
+        return inboxFragment;
+    }
+
+    private ComposeFragment getComposeFragment() {
+        if (composeFragment == null)
+            composeFragment = ComposeFragment.newInstance("to@gmail.com");
+        return composeFragment;
+    }
+
+
 
     @Override
     public void onMailSelected(int position) {
-        InboxFragment fragment = new InboxFragment();
-        /*
-        Bundle args = new Bundle();
-        args.putInt(newFragment.ARG_POSITION, position);
-        fragment.setArguments(args);
-        */
-        changeFragment(fragment);
+
     }
 
     void changeFragment(Fragment newFragment) {

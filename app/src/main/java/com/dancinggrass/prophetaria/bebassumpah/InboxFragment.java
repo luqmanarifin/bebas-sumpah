@@ -1,15 +1,12 @@
 package com.dancinggrass.prophetaria.bebassumpah;
 
-import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -59,59 +56,6 @@ public class InboxFragment extends Fragment {
 
     }
 
-    public class Mail {
-        public String from;
-        public String to;
-        public String message;
-        public boolean type_encrypted;
-        public boolean type_signature;
-
-        public String getFrom() {
-            return from;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getTo() {
-            return to;
-        }
-
-        public boolean getTypeEncrypted() {
-            return type_encrypted;
-        }
-
-        public boolean getTypeSignature() {
-            return type_signature;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        public void setType_encrypted(boolean type_encrypted) {
-            this.type_encrypted = type_encrypted;
-        }
-
-        public void setType_signature(boolean type_signature) {
-            this.type_signature = type_signature;
-        }
-
-        @Override
-        public String toString() {
-            return "From: " + from;
-        }
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,7 +74,17 @@ public class InboxFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.fragment_inbox, container, false);
+        return inflater.inflate(R.layout.fragment_inbox, container, false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        View v = getView();
+        updateView(v);
+    }
+
+    void updateView(View v) {
         final ListView lv = (ListView)v.findViewById(R.id.inbox);
 
         BackendlessDataQuery query = new BackendlessDataQuery();
@@ -153,7 +107,6 @@ public class InboxFragment extends Fragment {
                 Log.d(InboxFragment.class.getSimpleName(), fault.toString());
             }
         });
-        return v;
     }
 
     public void onListItemClick(ListView l, View v, int position, long id) {

@@ -32,6 +32,7 @@ public class MailActivity extends AppCompatActivity
         OnMailSelectedListener,
         ComposeFragment.OnSendListener,
         LoginDialogFragment.OnLoginDialogListener,
+        DecryptKeyDialogFragment.OnDecryptKeyDialogListener,
         KeyDialogFragment.OnKeyDialogListener {
 
     String address = null;
@@ -102,9 +103,9 @@ public class MailActivity extends AppCompatActivity
         postMail(draftMail);
     }
 
-
-
     public void sendMail(Mail mail) {
+        Log.d(MailActivity.class.getSimpleName(), mail.toString());
+
         if (mail.type_encrypted) {
             draftMail = mail;
             KeyDialogFragment keyDialogFragment = KeyDialogFragment.newInstance();
@@ -113,7 +114,6 @@ public class MailActivity extends AppCompatActivity
         else {
             postMail(mail);
         }
-
     }
 
     private void postMail(Mail mail) {
@@ -128,7 +128,7 @@ public class MailActivity extends AppCompatActivity
 
             @Override
             public void handleFault(BackendlessFault fault) {
-                Log.d(ComposeFragment.class.getSimpleName(), fault.toString());
+                Log.d(MailActivity.class.getSimpleName(), fault.toString());
             }
         });
     }
@@ -137,6 +137,7 @@ public class MailActivity extends AppCompatActivity
         Ecdsa dsa = new Ecdsa();
         String signature = dsa.sign(mail.message, new BigInteger(key.start));
         mail.message += addTag(signature);
+
     }
 
     private String addTag(String content) {
@@ -155,24 +156,22 @@ public class MailActivity extends AppCompatActivity
 
         BackendlessDataQuery query = new BackendlessDataQuery();
         query.setWhereClause("address = " + toClauseString(address));
-        Backendless.Persistence.of(Key.class).findFirst(new AsyncCallback<Key>() {
+        Backendless.Persistence.of(Key.class).find(query, new AsyncCallback<BackendlessCollection<Key>>() {
             @Override
-            public void handleResponse(Key response) {
-                if (response == null) {
+            public void handleResponse(BackendlessCollection<Key> response) {
+                List<Key> result = response.getData();
+                if (result.isEmpty()) {
                     setNewKey();
                 }
                 else {
-                    key = response;
+                    key = result.get(0);
                     changeFragment(getInboxFragment());
                 }
             }
 
             @Override
             public void handleFault(BackendlessFault fault) {
-                Log.d(MailActivity.class.getSimpleName(), fault.toString());
-                if (fault.getCode().equals("1010")) {
-                    setNewKey();
-                }
+
             }
         });
     }
@@ -220,15 +219,72 @@ public class MailActivity extends AppCompatActivity
 
     private ComposeFragment getComposeFragment() {
         if (composeFragment == null && address != null && key != null)
-            composeFragment = ComposeFragment.newInstance(address, key);
+            composeFragment = ComposeFragment.newInstance(address);
         return composeFragment;
     }
 
 
 
     @Override
-    public void onMailSelected(Mail mail) {
+    public void onMailSelected(final Mail mail) {
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        query.setWhereClause("address = " + toClauseString(mail.from));
+        Backendless.Persistence.of(Key.class).find(query, new AsyncCallback<BackendlessCollection<Key>>() {
+            @Override
+            public void handleResponse(BackendlessCollection<Key> response) {
+                List<Key> result = response.getData();
+                if (!result.isEmpty()) {
+                    Mail unpackedMail = unpack(mail, result.get(0));
+                    if (unpackedMail != null) {
+                        changeFragment(MailFragment.newInstance(unpackedMail));
+                    }
+                }
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+            }
+        });
+
+    }
+
+    public void onGetKey(String key) {
+        Mail mail = draftMail;
+        BonekAlgorithm bonekAlgorithm = new BonekAlgorithm();
+        mail.message = bonekAlgorithm.decrypt(mail.message, key);
         changeFragment(MailFragment.newInstance(mail));
+    }
+
+    public Mail unpack(Mail mail, Key key) {
+        if (mail.type_signature) {
+            int occurence = mail.message.indexOf("<ds>");
+            String mailSignature = mail.message.substring(occurence).replace("<ds>", "").replace("</ds>", "");
+            String mailMessage = mail.message.substring(0, occurence);
+
+            Ecdsa dsa = new Ecdsa();
+            if (!dsa.verify(mailMessage, new Point(new BigInteger(key.x), new BigInteger(key.y)), mailSignature)) {
+                mail.message = "Failed to verify message";
+                return mail;
+            }
+            else {
+                return unpackEncryption(mail);
+            }
+        }
+        else {
+            return unpackEncryption(mail);
+        }
+    }
+
+    public Mail unpackEncryption(Mail mail) {
+        if (mail.type_encrypted) {
+            draftMail = mail;
+            DecryptKeyDialogFragment keyDialogFragment = DecryptKeyDialogFragment.newInstance();
+            keyDialogFragment.show(getSupportFragmentManager(), "Key Dialog Fragment");
+            return null;
+        } else {
+            return mail;
+        }
     }
 
     void changeFragment(Fragment newFragment) {

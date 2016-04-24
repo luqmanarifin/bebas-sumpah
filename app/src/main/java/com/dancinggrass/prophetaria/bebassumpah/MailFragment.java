@@ -9,6 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import bonek.BonekAlgorithm;
+import elliptic_curve_signature.Ecdsa;
+import elliptic_curve_signature.Point;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,10 +24,15 @@ public class MailFragment extends Fragment {
     private static final String ARG_TO = "arg_to";
     private static final String ARG_SUBJECT = "arg_subject";
     private static final String ARG_MESSAGE = "arg_message";
+    private static final String ARG_ENCRYPTED = "arg_encrypted";
+    private static final String ARG_SIGNED = "arg_signed";
 
     private String to;
     private String subject;
     private String message;
+
+    private boolean encrypted;
+    private boolean signed;
 
 
     public MailFragment() {
@@ -41,9 +50,11 @@ public class MailFragment extends Fragment {
     public static MailFragment newInstance(Mail mail) {
         MailFragment fragment = new MailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_TO, mail.to);
-        args.putString(ARG_SUBJECT, mail.subject);
-        args.putString(ARG_MESSAGE, mail.message);
+        args.putString(ARG_TO, mail.getTo());
+        args.putString(ARG_SUBJECT, mail.getSubject());
+        args.putString(ARG_MESSAGE, mail.getMessage());
+        args.putBoolean(ARG_ENCRYPTED, mail.getTypeEncrypted());
+        args.putBoolean(ARG_SIGNED, mail.getTypeSignature());
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,6 +66,8 @@ public class MailFragment extends Fragment {
             to = getArguments().getString(ARG_TO);
             subject = getArguments().getString(ARG_SUBJECT);
             message = getArguments().getString(ARG_MESSAGE);
+            encrypted = getArguments().getBoolean(ARG_ENCRYPTED);
+            signed = getArguments().getBoolean(ARG_SIGNED);
         }
     }
 
@@ -63,17 +76,7 @@ public class MailFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_mail, container, false);
-        TextView textAddress = (TextView)v.findViewById(R.id.text_address);
-        TextView textSubject = (TextView)v.findViewById(R.id.text_subject);
-        TextView textMessage = (TextView)v.findViewById(R.id.text_message);
-
-        textAddress.setText(to);
-        textSubject.setText(subject);
-        textMessage.setText(message);
-
-        Log.d("MAIL", to);
-        Log.d("MAIL", subject);
-        Log.d("MAIL", message);
+        populateMail(v);
         return v;
     }
 
@@ -82,6 +85,18 @@ public class MailFragment extends Fragment {
         super.onAttach(context);
 
     }
+
+    public void populateMail(View v) {
+        TextView textAddress = (TextView)v.findViewById(R.id.text_address);
+        TextView textSubject = (TextView)v.findViewById(R.id.text_subject);
+        TextView textMessage = (TextView)v.findViewById(R.id.text_message);
+
+        textAddress.setText(to);
+        textSubject.setText(subject);
+        textMessage.setText(message);
+    }
+
+
 
     @Override
     public void onDetach() {

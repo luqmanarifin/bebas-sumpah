@@ -90,7 +90,7 @@ public class Ecdsa {
   }
 
   public boolean verify(String a, Point publicKey, String signature) {
-    String[] parts = signature.split("-");
+    String[] parts = signature.split("\n");
     Pair<BigInteger, BigInteger> sign = new Pair(new BigInteger(parts[0], 16), new BigInteger(parts[1], 16));
     return verify(toByte(a), publicKey, sign);
   }

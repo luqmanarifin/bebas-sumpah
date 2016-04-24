@@ -80,4 +80,13 @@ public class Keygen {
     }
     return null;
   } 
+  
+  /* force key to be 128-bit long */ 
+  public static int[] normalize(int[] key) {
+    int[] ret = new int[16];
+    for(int i = 0; i < 16; i++) {
+      ret[i] = key[i % key.length];
+    }
+    return ret;
+  }
 }

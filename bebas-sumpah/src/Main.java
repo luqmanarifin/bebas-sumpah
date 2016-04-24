@@ -47,7 +47,7 @@ public class Main {
   }
   
   public static void main(String[] args) {
-    /*
+    
     String message = "ciee yang udah dapet macbook trus gak ikutan codejam m(_ _)m";
     int[] a = toByte(message);
     
@@ -83,7 +83,7 @@ public class Main {
     
     System.out.println("original message");
     System.out.println(toString(a));
-    */
+    
     
     BonekAlgorithm bonek = new BonekAlgorithm();
     String s = "asu kon emang jancok";
@@ -93,6 +93,11 @@ public class Main {
     //System.out.println(BonekAlgorithm.toStringHex(BonekAlgorithm.toByteHex(s)));
     System.out.println(enc);
     System.out.println(bonek.decrypt(enc, sim));
+    
+    Pair<Point, BigInteger> one = Constant.getKey();
+    Pair<Point, BigInteger> two = Constant.getKey();
+    System.out.println(one.first + "\n\n" + one.second.toString(16));
+    System.out.println(two.first + "\n\n" + two.second.toString(16));
   }
   
 }

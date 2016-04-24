@@ -5,6 +5,7 @@
  */
 package elliptic_curve_signature;
 
+import bonek.BonekAlgorithm;
 import java.math.BigInteger;
 import sha_1.SHA1;
 
@@ -19,33 +20,12 @@ public class Ecdsa {
     
   }
   
-  /**
-   * convert String to unsigned byte
-   * since Java doesn't support all unsigned type, so there is no built-in function for this,
-   * and we have to implement it at our own
-   * @param s
-   * @return 
-   */
   public static int[] toByte(String s) {
-    byte[] b = s.getBytes();
-    int[] ret = new int[b.length];
-    for(int i = 0; i < ret.length; i++) {
-      ret[i] = b[i] + 128;
-    }
-    return ret;
+    return BonekAlgorithm.toByte(s);
   }
   
-  /**
-   * convert unsigned int to String
-   * @param a
-   * @return 
-   */
   public static String toString(int[] a) {
-    byte[] b = new byte[a.length];
-    for(int i = 0; i < a.length; i++) {
-      b[i] = (byte) (a[i] - 128);
-    }
-    return new String(b);
+    return BonekAlgorithm.toString(a);
   }
   
   /**

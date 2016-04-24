@@ -15,6 +15,9 @@ import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 
+import bonek.BonekAlgorithm;
+import elliptic_curve_signature.Ecdsa;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -99,11 +102,13 @@ public class ComposeFragment extends Fragment {
         String message = textMessage.getText().toString();
 
         if (boxEncrypt.isChecked()) {
+            BonekAlgorithm bonekAlgorithm = new BonekAlgorithm();
+
 
         }
 
         if (boxSign.isChecked()) {
-            
+            Ecdsa dsa = new Ecdsa();
         }
 
 

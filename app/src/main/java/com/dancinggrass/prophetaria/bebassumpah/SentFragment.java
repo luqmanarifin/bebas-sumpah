@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -29,12 +30,11 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class SentFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_ADDRESS = "arg_address";
 
-    // TODO: Rename and change types of parameters
     private String address;
+    List<Mail> mails = null;
 
     private OnMailSelectedListener mListener;
 
@@ -73,12 +73,6 @@ public class SentFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_sent, container, false);
     }
 
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO: Get mail from list
-        Mail mail = null;
-        mListener.onMailSelected(mail);
-    }
-
     private String toClauseString(String clause) {
         return "'" + clause + "'";
     }
@@ -87,6 +81,15 @@ public class SentFragment extends Fragment {
     public void onStart() {
         super.onStart();
         View v = getView();
+        ListView lv = (ListView)v.findViewById(R.id.inbox);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(InboxFragment.class.getSimpleName(), String.valueOf(position));
+                Mail mail = mails.get(position);
+                mListener.onMailSelected(mail);
+            }
+        });
         updateView(v);
     }
 
@@ -102,9 +105,9 @@ public class SentFragment extends Fragment {
                 ArrayAdapter<String> ad = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, items);
                 lv.setAdapter(ad);
 
-                List<Mail> results = foundMails.getCurrentPage();
-                Log.d(SentFragment.class.getSimpleName(), results.toString());
-                for (Mail result: results) {
+                mails = foundMails.getCurrentPage();
+                Log.d(SentFragment.class.getSimpleName(), mails.toString());
+                for (Mail result: mails) {
                     items.add(result.toString());
                 }
             }

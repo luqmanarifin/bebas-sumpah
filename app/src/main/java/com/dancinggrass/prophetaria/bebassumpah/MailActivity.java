@@ -172,7 +172,7 @@ public class MailActivity extends AppCompatActivity
 
     @Override
     public void onMailSelected(Mail mail) {
-
+        changeFragment(MailFragment.newInstance(mail));
     }
 
     void changeFragment(Fragment newFragment) {

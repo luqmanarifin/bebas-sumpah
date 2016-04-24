@@ -2,11 +2,13 @@ package com.dancinggrass.prophetaria.bebassumpah;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -33,6 +35,7 @@ public class InboxFragment extends Fragment {
     private static final String ARG_ADDRESS = "arg_address";
 
     private String address;
+    List<Mail> mails = null;
 
     private OnMailSelectedListener mListener;
 
@@ -81,6 +84,14 @@ public class InboxFragment extends Fragment {
     public void onStart() {
         super.onStart();
         View v = getView();
+        ListView lv = (ListView)v.findViewById(R.id.inbox);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Mail mail = mails.get(position);
+                mListener.onMailSelected(mail);
+            }
+        });
         updateView(v);
     }
 
@@ -94,9 +105,9 @@ public class InboxFragment extends Fragment {
             public void handleResponse(BackendlessCollection<Mail> foundMails) {
                 List<String> items = new ArrayList<String>();
 
-                List<Mail> results = foundMails.getData();
-                Log.d(InboxFragment.class.getSimpleName(), results.toString());
-                for (Mail result: results) {
+                mails = foundMails.getData();
+                Log.d(InboxFragment.class.getSimpleName(), mails.toString());
+                for (Mail result: mails) {
                     items.add(result.toString());
                 }
 
@@ -110,11 +121,6 @@ public class InboxFragment extends Fragment {
         });
     }
 
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO: Get mail from list
-        Mail mail = null;
-        mListener.onMailSelected(mail);
-    }
 
     @Override
     public void onAttach(Context context) {

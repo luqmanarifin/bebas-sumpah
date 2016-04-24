@@ -133,18 +133,20 @@ public class BonekAlgorithm {
   
   public int[] encrypt(int[] plain, int[] key) {
     Block[] b = toArrayBlock(plain);
+    key = Keygen.normalize(key);
     return toArrayInt(encrypt(b, key));
+  }
+  
+  public int[] decrypt(int[] cipher, int[] key) {
+    Block[] b = toArrayBlock(cipher);
+    key = Keygen.normalize(key);
+    return toArrayInt(decrypt(b, key));
   }
   
   public String encrypt(String _plain, String _key) {
     int[] plain = toByte(_plain);
     int[] key = toByte(_key);
     return toString(encrypt(plain, key));
-  }
-  
-  public int[] decrypt(int[] cipher, int[] key) {
-    Block[] b = toArrayBlock(cipher);
-    return toArrayInt(decrypt(b, key));
   }
   
   public String decrypt(String _cipher, String _key) {

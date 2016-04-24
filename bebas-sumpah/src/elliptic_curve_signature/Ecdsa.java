@@ -20,6 +20,35 @@ public class Ecdsa {
   }
   
   /**
+   * convert String to unsigned byte
+   * since Java doesn't support all unsigned type, so there is no built-in function for this,
+   * and we have to implement it at our own
+   * @param s
+   * @return 
+   */
+  public static int[] toByte(String s) {
+    byte[] b = s.getBytes();
+    int[] ret = new int[b.length];
+    for(int i = 0; i < ret.length; i++) {
+      ret[i] = b[i] + 128;
+    }
+    return ret;
+  }
+  
+  /**
+   * convert unsigned int to String
+   * @param a
+   * @return 
+   */
+  public static String toString(int[] a) {
+    byte[] b = new byte[a.length];
+    for(int i = 0; i < a.length; i++) {
+      b[i] = (byte) (a[i] - 128);
+    }
+    return new String(b);
+  }
+  
+  /**
    * 
    * @param a
    * @param privateKey
@@ -39,6 +68,10 @@ public class Ecdsa {
     }
   }
   
+  public Pair<BigInteger, BigInteger> sign(String a, BigInteger privateKey) {
+    return sign(toByte(a), privateKey);
+  }
+  
   public boolean verify(int[] a, Point publicKey, Pair<BigInteger, BigInteger> signature) {
     BigInteger r = signature.first;
     BigInteger s = signature.second;
@@ -53,6 +86,10 @@ public class Ecdsa {
     Point temp = Point.multiply(Constant.P, u1).add(Point.multiply(publicKey, u2));
     BigInteger v = temp.x.mod(Constant.n);
     return r.compareTo(v) == 0;
+  }
+
+  public boolean verify(String a, Point publicKey, Pair<BigInteger, BigInteger> signature) {
+    return verify(toByte(a), publicKey, signature);
   }
   
 }

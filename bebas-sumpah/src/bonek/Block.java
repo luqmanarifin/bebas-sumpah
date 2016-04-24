@@ -28,7 +28,7 @@ public class Block {
     bit = new int[Global.BLOCK_SIZE];
     Random rand = new Random();
     for(int i = 0; i < Global.BLOCK_SIZE; i++) {
-      bit[i] = 0; //rand.nextInt(1 << BIT_SIZE);
+      bit[i] = 128; //rand.nextInt(1 << BIT_SIZE);
     }
   }
   

@@ -32,6 +32,7 @@ public class MailActivity extends AppCompatActivity
         OnMailSelectedListener,
         ComposeFragment.OnSendListener,
         LoginDialogFragment.OnLoginDialogListener,
+        DecryptKeyDialogFragment.OnDecryptKeyDialogListener,
         KeyDialogFragment.OnKeyDialogListener {
 
     String address = null;
@@ -102,8 +103,6 @@ public class MailActivity extends AppCompatActivity
         postMail(draftMail);
     }
 
-
-
     public void sendMail(Mail mail) {
         if (mail.type_encrypted) {
             draftMail = mail;
@@ -113,7 +112,6 @@ public class MailActivity extends AppCompatActivity
         else {
             postMail(mail);
         }
-
     }
 
     private void postMail(Mail mail) {
@@ -220,7 +218,7 @@ public class MailActivity extends AppCompatActivity
 
     private ComposeFragment getComposeFragment() {
         if (composeFragment == null && address != null && key != null)
-            composeFragment = ComposeFragment.newInstance(address, key);
+            composeFragment = ComposeFragment.newInstance(address);
         return composeFragment;
     }
 
@@ -228,7 +226,42 @@ public class MailActivity extends AppCompatActivity
 
     @Override
     public void onMailSelected(Mail mail) {
+        mail = unpack(mail);
+        if (mail != null) {
+            changeFragment(MailFragment.newInstance(mail));
+        }
+    }
+
+    public void onGetKey(String key) {
+        Mail mail = draftMail;
+        BonekAlgorithm bonekAlgorithm = new BonekAlgorithm();
+        mail.message = bonekAlgorithm.decrypt(mail.message, key);
         changeFragment(MailFragment.newInstance(mail));
+    }
+
+    public Mail unpack(Mail mail) {
+        if (mail.type_signature) {
+            int occurence = mail.to.indexOf("<ds>");
+            String mailSignature = mail.to.substring(occurence).replace("<ds>", "").replace("</ds>", "");
+            String mailMessage = mail.to.substring(0, occurence);
+            Ecdsa dsa = new Ecdsa();
+            if (!dsa.verify(mailMessage, new Point(new BigInteger(key.x), new BigInteger(key.y)), mailSignature)) {
+                mail.message = "Failed to verify message";
+                return mail;
+            }
+            else {
+                mail.message = mailMessage;
+            }
+        }
+        if (mail.type_encrypted) {
+            draftMail = mail;
+            DecryptKeyDialogFragment keyDialogFragment = DecryptKeyDialogFragment.newInstance();
+            keyDialogFragment.show(getSupportFragmentManager(), "Key Dialog Fragment");
+            return null;
+        }
+        else {
+            return mail;
+        }
     }
 
     void changeFragment(Fragment newFragment) {

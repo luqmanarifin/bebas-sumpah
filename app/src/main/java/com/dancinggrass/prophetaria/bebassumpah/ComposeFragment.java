@@ -32,14 +32,9 @@ import elliptic_curve_signature.Ecdsa;
 public class ComposeFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_ADDRESS = "arg_address";
-    private static final String ARG_X = "arg_x";
-    private static final String ARG_Y= "arg_y";
-    private static final String ARG_START= "arg_start";
 
     private String address;
-    private Key key;
 
-    private Mail draftMail = null;
 
     private OnSendListener mListener = null;
 
@@ -55,13 +50,10 @@ public class ComposeFragment extends Fragment {
      * @param address Parameter 1.
      * @return A new instance of fragment ComposeFragment.
      */
-    public static ComposeFragment newInstance(String address, Key encryptKey) {
+    public static ComposeFragment newInstance(String address) {
         ComposeFragment fragment = new ComposeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_ADDRESS, address);
-        args.putString(ARG_X, encryptKey.getX());
-        args.putString(ARG_Y, encryptKey.getY());
-        args.putString(ARG_START, encryptKey.getStart());
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,10 +63,6 @@ public class ComposeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             address = getArguments().getString(ARG_ADDRESS);
-            String x = getArguments().getString(ARG_X);
-            String y = getArguments().getString(ARG_Y);
-            String start = getArguments().getString(ARG_START);
-            key = new Key(address, x, y, start);
         }
     }
 

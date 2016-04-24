@@ -102,13 +102,54 @@ public class BonekAlgorithm {
     return ret;
   }
   
+  /**
+   * convert String to unsigned byte
+   * since Java doesn't support all unsigned type, so there is no built-in function for this,
+   * and we have to implement it at our own
+   * @param s
+   * @return 
+   */
+  public static int[] toByte(String s) {
+    byte[] b = s.getBytes();
+    int[] ret = new int[b.length];
+    for(int i = 0; i < ret.length; i++) {
+      ret[i] = b[i] + 128;
+    }
+    return ret;
+  }
+  
+  /**
+   * convert unsigned int to String
+   * @param a
+   * @return 
+   */
+  public static String toString(int[] a) {
+    byte[] b = new byte[a.length];
+    for(int i = 0; i < a.length; i++) {
+      b[i] = (byte) (a[i] - 128);
+    }
+    return new String(b);
+  }
+  
   public int[] encrypt(int[] plain, int[] key) {
     Block[] b = toArrayBlock(plain);
     return toArrayInt(encrypt(b, key));
   }
   
+  public String encrypt(String _plain, String _key) {
+    int[] plain = toByte(_plain);
+    int[] key = toByte(_key);
+    return toString(encrypt(plain, key));
+  }
+  
   public int[] decrypt(int[] cipher, int[] key) {
     Block[] b = toArrayBlock(cipher);
     return toArrayInt(decrypt(b, key));
+  }
+  
+  public String decrypt(String _cipher, String _key) {
+    int[] cipher = toByte(_cipher);
+    int[] key = toByte(_key);
+    return toString(decrypt(cipher, key));
   }
 }

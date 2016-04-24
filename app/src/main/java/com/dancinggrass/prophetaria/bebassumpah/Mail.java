@@ -6,6 +6,7 @@ package com.dancinggrass.prophetaria.bebassumpah;
 public class Mail {
     public String from;
     public String to;
+    public String subject;
     public String message;
     public boolean type_encrypted;
     public boolean type_signature;
@@ -15,20 +16,30 @@ public class Mail {
         this.type_signature = false;
     }
 
-    public Mail(String from, String to, String message) {
+    public Mail(String from, String to, String subject, String message) {
         this.from = from;
         this.to = to;
+        this.subject = subject;
         this.message = message;
         this.type_encrypted = false;
         this.type_signature = false;
     }
 
-    public Mail(String from, String to, String message, boolean type_encrypted, boolean type_signature) {
+    public Mail(String from, String to, String subject, String message, boolean type_encrypted, boolean type_signature) {
         this.from = from;
         this.to = to;
         this.message = message;
+        this.subject = subject;
         this.type_encrypted = type_encrypted;
         this.type_signature = type_signature;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public String getFrom() {

@@ -74,7 +74,7 @@ public class ComposeFragment extends Fragment {
                 String to = textTo.getText().toString();
                 String subject = textSubject.getText().toString();
                 String message = textMessage.getText().toString();
-                Mail mail = new Mail(to, subject, message);
+                Mail mail = new Mail(address, to, subject, message);
                 Backendless.Persistence.of(Mail.class).save(mail, new AsyncCallback<Mail>() {
                     @Override
                     public void handleResponse(Mail response) {

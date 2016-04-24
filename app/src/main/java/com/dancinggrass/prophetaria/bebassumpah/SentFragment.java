@@ -25,18 +25,20 @@ import java.util.List;
  * Activities that contain this fragment must implement the
  * {@link OnMailSelectedListener} interface
  * to handle interaction events.
- * Use the {@link InboxFragment#newInstance} factory method to
+ * Use the {@link SentFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class InboxFragment extends Fragment {
+public class SentFragment extends Fragment {
+    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_ADDRESS = "arg_address";
 
+    // TODO: Rename and change types of parameters
     private String address;
 
     private OnMailSelectedListener mListener;
 
-    public InboxFragment() {
+    public SentFragment() {
         // Required empty public constructor
     }
 
@@ -45,15 +47,15 @@ public class InboxFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param address Parameter 1.
-     * @return A new instance of fragment InboxFragment.
+     * @return A new instance of fragment SentFragment.
      */
-    public static InboxFragment newInstance(String address) {
-        InboxFragment fragment = new InboxFragment();
+    // TODO: Rename and change types and number of parameters
+    public static SentFragment newInstance(String address) {
+        SentFragment fragment = new SentFragment();
         Bundle args = new Bundle();
         args.putString(ARG_ADDRESS, address);
         fragment.setArguments(args);
         return fragment;
-
     }
 
     @Override
@@ -62,19 +64,23 @@ public class InboxFragment extends Fragment {
         if (getArguments() != null) {
             address = getArguments().getString(ARG_ADDRESS);
         }
-
-
-    }
-
-    private String toClauseString(String clause) {
-        return "'" + clause + "'";
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_sent, container, false);
+    }
 
-        return inflater.inflate(R.layout.fragment_inbox, container, false);
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        // TODO: Get mail from list
+        Mail mail = null;
+        mListener.onMailSelected(mail);
+    }
+
+    private String toClauseString(String clause) {
+        return "'" + clause + "'";
     }
 
     @Override
@@ -85,10 +91,10 @@ public class InboxFragment extends Fragment {
     }
 
     void updateView(View v) {
-        final ListView lv = (ListView)v.findViewById(R.id.inbox);
+        final ListView lv = (ListView)v.findViewById(R.id.sent);
 
         BackendlessDataQuery query = new BackendlessDataQuery();
-        query.setWhereClause("to = " + toClauseString(address));
+        query.setWhereClause("from = " + toClauseString(address));
         Backendless.Persistence.of(Mail.class).find(query, new AsyncCallback< BackendlessCollection<Mail> >(){
             @Override
             public void handleResponse(BackendlessCollection<Mail> foundMails) {
@@ -97,22 +103,16 @@ public class InboxFragment extends Fragment {
                 lv.setAdapter(ad);
 
                 List<Mail> results = foundMails.getCurrentPage();
-                Log.d(InboxFragment.class.getSimpleName(), results.toString());
+                Log.d(SentFragment.class.getSimpleName(), results.toString());
                 for (Mail result: results) {
                     items.add(result.toString());
                 }
             }
             @Override
             public void handleFault(BackendlessFault fault ) {
-                Log.d(InboxFragment.class.getSimpleName(), fault.toString());
+                Log.d(SentFragment.class.getSimpleName(), fault.toString());
             }
         });
-    }
-
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO: Get mail from list
-        Mail mail = null;
-        mListener.onMailSelected(mail);
     }
 
     @Override
@@ -131,5 +131,4 @@ public class InboxFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
 }

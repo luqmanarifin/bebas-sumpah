@@ -15,11 +15,10 @@ import android.widget.Button;
 
 import com.backendless.Backendless;
 
-public class MailActivity extends AppCompatActivity
-        implements InboxFragment.OnMailSelectedListener {
+public class MailActivity extends AppCompatActivity implements OnMailSelectedListener {
 
     InboxFragment inboxFragment = null;
-    //SentFragment sentFragment;
+    SentFragment sentFragment = null;
     ComposeFragment composeFragment = null;
 
     @Override
@@ -47,10 +46,7 @@ public class MailActivity extends AppCompatActivity
         sent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /* STUB
-                ComposeFragment fragment = new ComposeFragment();
-                changeFragment(fragment);
-                */
+                changeFragment(getSentFragment());
             }
         });
         Button compose = (Button)findViewById(R.id.button_compose);
@@ -70,32 +66,33 @@ public class MailActivity extends AppCompatActivity
                 return;
             }
 
-            // Create a new Fragment to be placed in the activity layout
-            if (inboxFragment == null)
-                inboxFragment = InboxFragment.newInstance("to@gmail.com");
-
             // Add the fragment to the 'fragment_container' FrameLayout
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, inboxFragment).commit();
+                    .add(R.id.fragment_container, getInboxFragment()).commit();
         }
     }
 
     private InboxFragment getInboxFragment() {
         if (inboxFragment == null)
-            inboxFragment = InboxFragment.newInstance("to@gmail.com");
+            inboxFragment = InboxFragment.newInstance("from@gmail.com");
         return inboxFragment;
+    }
+    private SentFragment getSentFragment() {
+        if (sentFragment == null)
+            sentFragment = SentFragment.newInstance("from@gmail.com");
+        return sentFragment;
     }
 
     private ComposeFragment getComposeFragment() {
         if (composeFragment == null)
-            composeFragment = ComposeFragment.newInstance("to@gmail.com");
+            composeFragment = ComposeFragment.newInstance("from@gmail.com");
         return composeFragment;
     }
 
 
 
     @Override
-    public void onMailSelected(int position) {
+    public void onMailSelected(Mail mail) {
 
     }
 

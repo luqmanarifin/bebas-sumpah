@@ -1,8 +1,8 @@
-# READ ME
+# Bebas Sumpah, your secure mobile client
 
 A secure mobile email client, embedded with digital signature using Elliptic Curve Digital Signature Algorithm and SHA-1. Encrypted with Bonek Encryption Algorithm (BEA), symmetric block cipher encryption.
 
-What user can do with this mobile email client :
+What user can do with this mobile email client:
 
 1. Get public key and private key for Elliptic Curve Digital Signature
 

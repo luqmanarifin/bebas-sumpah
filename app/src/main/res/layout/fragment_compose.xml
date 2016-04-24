@@ -34,6 +34,22 @@
                     android:inputType="textEmailAddress"
                     android:hint="@string/hint_email_subject"/>
             </LinearLayout>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <CheckBox
+                    android:id="@+id/checkbox_encrypt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkbox_encrypt"/>
+                <CheckBox
+                    android:id="@+id/checkbox_sign"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkbox_sign"/>
+            </LinearLayout>
             <Button
                 style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/button_send"
@@ -42,7 +58,6 @@
                 android:layout_gravity="center"
                 android:text="@string/button_send" />
         </LinearLayout>
-
 
         <EditText
             android:layout_width="match_parent"

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.backendless.Backendless;
@@ -89,9 +90,23 @@ public class ComposeFragment extends Fragment {
         EditText textTo = (EditText)v.findViewById(R.id.edit_text_recipient);
         EditText textSubject = (EditText)v.findViewById(R.id.edit_text_subject);
         EditText textMessage = (EditText)v.findViewById(R.id.edit_text_message);
+
+        CheckBox boxEncrypt = (CheckBox)v.findViewById(R.id.checkbox_encrypt);
+        CheckBox boxSign = (CheckBox)v.findViewById(R.id.checkbox_sign);
+
         String to = textTo.getText().toString();
         String subject = textSubject.getText().toString();
         String message = textMessage.getText().toString();
+
+        if (boxEncrypt.isChecked()) {
+
+        }
+
+        if (boxSign.isChecked()) {
+            
+        }
+
+
         return new Mail(address, to, subject, message);
     }
 

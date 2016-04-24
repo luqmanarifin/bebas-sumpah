@@ -68,8 +68,9 @@ public class Ecdsa {
     }
   }
   
-  public Pair<BigInteger, BigInteger> sign(String a, BigInteger privateKey) {
-    return sign(toByte(a), privateKey);
+  public String sign(String a, BigInteger privateKey) {
+    Pair<BigInteger, BigInteger> ret = sign(toByte(a), privateKey);
+    return ret.first.toString(16) + "\n" + ret.second.toString(16);
   }
   
   public boolean verify(int[] a, Point publicKey, Pair<BigInteger, BigInteger> signature) {
@@ -88,8 +89,10 @@ public class Ecdsa {
     return r.compareTo(v) == 0;
   }
 
-  public boolean verify(String a, Point publicKey, Pair<BigInteger, BigInteger> signature) {
-    return verify(toByte(a), publicKey, signature);
+  public boolean verify(String a, Point publicKey, String signature) {
+    String[] parts = signature.split("-");
+    Pair<BigInteger, BigInteger> sign = new Pair(new BigInteger(parts[0], 16), new BigInteger(parts[1], 16));
+    return verify(toByte(a), publicKey, sign);
   }
   
 }

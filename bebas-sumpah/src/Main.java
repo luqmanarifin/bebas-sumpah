@@ -76,7 +76,8 @@ public class Main {
     Pair<BigInteger, BigInteger> signature = dsa.sign(a, key.second);
     
     System.out.println("\ndigital signature");
-    System.out.println(signature);
+    System.out.println(signature.first.toString(16));
+    System.out.println(signature.second.toString(16));
     
     // verify the digital signature, param : int[] message, Point publicKey, Pair<Bigint, Bigint> signature
     System.out.println(dsa.verify(a, key.first, signature)? "VERIFIED" : "NOT VERIFIED");

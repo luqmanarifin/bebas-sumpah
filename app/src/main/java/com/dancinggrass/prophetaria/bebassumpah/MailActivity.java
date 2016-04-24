@@ -1,20 +1,27 @@
 package com.dancinggrass.prophetaria.bebassumpah;
 
 import android.os.Bundle;
-import android.provider.Telephony;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
 import com.backendless.Backendless;
+import com.backendless.BackendlessCollection;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.persistence.BackendlessDataQuery;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import elliptic_curve_signature.Constant;
+import elliptic_curve_signature.Pair;
+import elliptic_curve_signature.Point;
 
 public class MailActivity extends AppCompatActivity
         implements
@@ -22,6 +29,7 @@ public class MailActivity extends AppCompatActivity
         LoginDialogFragment.OnLoginDialogListener {
 
     String address = null;
+    Key key = null;
 
     InboxFragment inboxFragment = null;
     SentFragment sentFragment = null;
@@ -81,10 +89,58 @@ public class MailActivity extends AppCompatActivity
 
     }
 
+    private String toClauseString(String clause) {
+        return "'" + clause + "'";
+    }
+
     @Override
-    public void onLogin(String address) {
+    public void onLogin(final String address) {
         this.address = address;
-        changeFragment(getInboxFragment());
+
+        BackendlessDataQuery query = new BackendlessDataQuery();
+        query.setWhereClause("address = " + toClauseString(address));
+        Backendless.Persistence.of(Key.class).findFirst(new AsyncCallback<Key>() {
+            @Override
+            public void handleResponse(Key response) {
+                if (response == null) {
+                    setNewKey();
+                }
+                else {
+                    key = response;
+                    changeFragment(getInboxFragment());
+                }
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.d(MailActivity.class.getSimpleName(), fault.toString());
+                if (fault.getCode().equals("1010")) {
+                    setNewKey();
+                }
+            }
+        });
+    }
+
+    public void setNewKey() {
+        Pair<Point, BigInteger> rawKey = Constant.getKey();
+        String x = rawKey.first.x.toString();
+        String y = rawKey.first.y.toString();
+        String start = rawKey.second.toString();
+
+        final Key packedKey = new Key(address, x, y, start);
+
+        Backendless.Persistence.of(Key.class).save(packedKey, new AsyncCallback<Key>() {
+            @Override
+            public void handleResponse(Key response) {
+                key = response;
+                changeFragment(getInboxFragment());
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.d(MailActivity.class.getSimpleName(), fault.toString());
+            }
+        });
     }
 
     public void onStart() {

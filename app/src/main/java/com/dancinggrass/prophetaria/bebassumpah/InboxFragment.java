@@ -93,14 +93,15 @@ public class InboxFragment extends Fragment {
             @Override
             public void handleResponse(BackendlessCollection<Mail> foundMails) {
                 List<String> items = new ArrayList<String>();
-                ArrayAdapter<String> ad = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, items);
-                lv.setAdapter(ad);
 
-                List<Mail> results = foundMails.getCurrentPage();
+                List<Mail> results = foundMails.getData();
                 Log.d(InboxFragment.class.getSimpleName(), results.toString());
                 for (Mail result: results) {
                     items.add(result.toString());
                 }
+
+                ArrayAdapter<String> ad = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, items);
+                lv.setAdapter(ad);
             }
             @Override
             public void handleFault(BackendlessFault fault ) {
@@ -122,7 +123,7 @@ public class InboxFragment extends Fragment {
             mListener = (OnMailSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnLoginDialogListener");
         }
     }
 

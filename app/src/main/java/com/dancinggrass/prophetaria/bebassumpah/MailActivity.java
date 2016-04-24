@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.provider.Telephony;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,12 @@ import android.widget.Button;
 
 import com.backendless.Backendless;
 
-public class MailActivity extends AppCompatActivity implements OnMailSelectedListener {
+public class MailActivity extends AppCompatActivity
+        implements
+        OnMailSelectedListener,
+        LoginDialogFragment.OnLoginDialogListener {
+
+    String address = null;
 
     InboxFragment inboxFragment = null;
     SentFragment sentFragment = null;
@@ -66,26 +72,43 @@ public class MailActivity extends AppCompatActivity implements OnMailSelectedLis
                 return;
             }
 
-            // Add the fragment to the 'fragment_container' FrameLayout
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, getInboxFragment()).commit();
+            InboxFragment firstFragment = getInboxFragment();
+            if (firstFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_container, firstFragment).commit();
+            }
+        }
+
+    }
+
+    @Override
+    public void onLogin(String address) {
+        this.address = address;
+        changeFragment(getInboxFragment());
+    }
+
+    public void onStart() {
+        super.onStart();
+        if (address == null) {
+            LoginDialogFragment loginDialogFragment = LoginDialogFragment.newInstance();
+            loginDialogFragment.show(getSupportFragmentManager(), "Login Dialog Fragment");
         }
     }
 
     private InboxFragment getInboxFragment() {
-        if (inboxFragment == null)
-            inboxFragment = InboxFragment.newInstance("from@gmail.com");
+        if (inboxFragment == null && address != null)
+            inboxFragment = InboxFragment.newInstance(address);
         return inboxFragment;
     }
     private SentFragment getSentFragment() {
-        if (sentFragment == null)
-            sentFragment = SentFragment.newInstance("from@gmail.com");
+        if (sentFragment == null && address != null)
+            sentFragment = SentFragment.newInstance(address);
         return sentFragment;
     }
 
     private ComposeFragment getComposeFragment() {
-        if (composeFragment == null)
-            composeFragment = ComposeFragment.newInstance("from@gmail.com");
+        if (composeFragment == null && address != null)
+            composeFragment = ComposeFragment.newInstance(address);
         return composeFragment;
     }
 

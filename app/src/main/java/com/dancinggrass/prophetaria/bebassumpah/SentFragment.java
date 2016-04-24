@@ -122,7 +122,7 @@ public class SentFragment extends Fragment {
             mListener = (OnMailSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnLoginDialogListener");
         }
     }
 

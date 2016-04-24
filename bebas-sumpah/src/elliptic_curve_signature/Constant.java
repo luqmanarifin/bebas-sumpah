@@ -46,7 +46,7 @@ public class Constant {
     return new Point().multiply(base, secretKey);
   }
   
-  public static Pair<Point, Integer> getKey() {
+  public static Pair<Point, BigInteger> getKey() {
     BigInteger secretKey = getRandom(BigInteger.valueOf(1), n.subtract(BigInteger.valueOf(1)));
     return new Pair(getPublicKey(secretKey), secretKey);
   }

@@ -16,4 +16,8 @@ SHA1
 
 ECDSA
 -> signing : input array of bytes + biginteger (private key), output pair of integer
--> verif : input array of bytes + point (public key) + signature, output yes/no
+-> verif : input array of bytes + point (public key) + signature pair of integer, output yes/no
+
+constant
+point
+ecdsa
